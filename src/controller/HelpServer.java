@@ -15,13 +15,13 @@ public class HelpServer extends Thread {
 	
 	private boolean onServer;
 	
-	private boolean inRoom;
+	private boolean inRoom = false;
 	
 	private PrintWriter out;
 	    
 	private BufferedReader in;
 	
-	private Room room;
+	private Room room = null;
 	
 	public HelpServer(Socket socket) {
 		
@@ -42,6 +42,10 @@ public class HelpServer extends Thread {
             
         }
 	}
+	
+		public void setStatusRoom(boolean status) {
+			inRoom = status;
+		}
 		
 		public boolean getRoomStatus() {
 			return inRoom;
@@ -53,6 +57,10 @@ public class HelpServer extends Thread {
 		
 		public void exitRoom() {
 			room = null;
+		}
+		
+		public int getID() {
+			return id;
 		}
 		
 		public void sendMessage(String string) {
@@ -83,6 +91,7 @@ public class HelpServer extends Thread {
 							int answer = Server.addNewUser(name, password);
 							if(answer >= 1) {
 								out.println("@init: " + "ALLRIGHT");
+								Server.addIDtoServer(answer);
 								id = answer;
 							}
 							else {
@@ -103,13 +112,19 @@ public class HelpServer extends Thread {
 							System.out.println(password);
 							System.out.println("I'm here at 52");
 							int answer = Server.verifyUser(name, password);
-							if(answer >= 1) {
+							
+							if(answer >= 1 && !Server.currentIDUsers(answer)) {
 								out.println("@verify: " + "ALLRIGHT");
+								Server.addIDtoServer(answer);
 								id = answer;
 							}
 							else {
 								out.println("@verify: " + "ERROR");
 							}
+						}
+						if(message.startsWith("@getRatings ")) {
+							String list = Server.getRatings();
+							out.println("@ratings " + list);
 						}
 						if(message.startsWith("@newRoom ")) {
 							String nameRoom = new String();
@@ -167,13 +182,24 @@ public class HelpServer extends Thread {
 							if(message.indexOf("host") > 0) {
 								System.out.println(message);
 								room.setHost();
-								room.run();
+								room.startFirst();
+								System.out.println("HelpServer: 183");
+							}else {
+								System.out.println(message);
+								room.setGuest();
+							}
+						}
+						if(message.startsWith("@ready ")) {
+							if(message.indexOf("host") > 0) {
+								System.out.println(message);
+								room.setHost();
 							}else {
 								System.out.println(message);
 								room.setGuest();
 							}
 						}
 						if(message.startsWith("@up ")) {
+							System.out.println(message);
 							if(message.indexOf("host") > 0) {
 								System.out.println(message);
 								room.upHost();
@@ -184,16 +210,22 @@ public class HelpServer extends Thread {
 							}
 						}
 						if(message.startsWith("@down ")) {
+							System.out.println(message);
 							if(message.indexOf("host") > 0) {
-								
+								System.out.println(message);
 								room.downHost();
 							}else {
-								
+								System.out.println(message);
 								room.downGuest();
 							
 							}
 						}
 						if(message.startsWith("@exit ")) {
+							if(room!= null) {
+								
+								room.cancelConnectForHost();
+							}
+							Server.deleteFromServer(id);
 							out.close();
 							in.close();
 							socket.close();

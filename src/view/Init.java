@@ -6,7 +6,8 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -86,6 +87,12 @@ public class Init extends JFrame {
 		
 		this.add(buttonExit);
 		
+		this.addWindowListener(new WindowAdapter() {
+			  public void windowClosing(WindowEvent e) {
+			       user.close(); 
+			  }
+		});
+		
 		setResizable(false);
 		
 		this.setLocation(450, 170);
@@ -93,6 +100,8 @@ public class Init extends JFrame {
 		this.setSize(WIDTH, HEIGHT);
 		
 		this.setVisible(true);
+		
+		
 	}
 	private class MyListener implements ActionListener{
 

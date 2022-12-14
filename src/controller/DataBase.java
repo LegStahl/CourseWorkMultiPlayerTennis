@@ -24,6 +24,8 @@ public class DataBase {
 	
 	private final String GETALL = "SELECT * FROM users";
 	
+	private final String GETUSERSRATINGS = "SELECT name, countgames, countvictory FROM users";
+	
 	private final String GETID = "SELECT idname, password FROM users where name = ?";
 	
 	private final String INSERTWHERE = "UPDATE users SET countgames = ? , countvictory = ? WHERE idname = ?";;
@@ -124,6 +126,23 @@ public class DataBase {
 		}catch(SQLException e) {
 			System.out.println(e.getMessage());
 			return EXCEPTION;
+		}
+	}
+	
+	public synchronized String getRatings(){
+		try {
+			preparedStatement = connection.prepareStatement(GETUSERSRATINGS);
+			ResultSet resultSet = preparedStatement.executeQuery();
+			String list = new String();
+			while(resultSet.next()) {
+				 list += resultSet.getString(1) + " " + resultSet.getInt(2) +" "+ resultSet.getInt(3) + " ";
+				
+			}
+			preparedStatement.close();
+			return list;
+		}catch(SQLException e) {
+			System.out.println(e.getMessage());
+			return "NULL";
 		}
 	}
 	

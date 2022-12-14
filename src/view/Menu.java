@@ -3,10 +3,13 @@ package view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Scanner;
 
 import javax.swing.BoxLayout;
@@ -105,6 +108,11 @@ public class Menu extends JFrame  {
 		buttonBack.addActionListener(listen);
 		buttonBack.setBackground(new Color(245, 222, 179));
 		buttonConnect.addActionListener(listen);
+		this.addWindowListener(new WindowAdapter() {
+			  public void windowClosing(WindowEvent e) {
+			       user.close(); 
+			  }
+		});
 		}
 	
 	private class MyListener implements ActionListener{
@@ -144,6 +152,7 @@ public class Menu extends JFrame  {
 				newRoom.add(hardButton);
 				newRoom.add(forTextEnter);
 				newRoom.add(forButtons);
+				
 				Menu.this.add(newRoom);
 				Menu.this.validate();
 				
@@ -181,21 +190,33 @@ public class Menu extends JFrame  {
 			if(e.getSource() == buttonRecords) {
 				System.out.println("Pressed Records");
 				Menu.this.getContentPane().removeAll();
-				
-				
-				Menu.this.repaint();
+				user.send("@getRatings ");
 				records = new JPanel();
-				
-				records.setLayout(new GridLayout(5, 1) );
-				JLabel a[] = new JLabel[4];
-				//Records record = new Records();
-				for(int i = 0; i < 4; i++) {
-					//records.add(a[i] = new JLabel(" " +  (i + 1) + ". " + record.getResult(i)));
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
-				buttonBack.setBackground(new Color(245, 222, 179));
-				records.add(buttonBack);
-				records.add(nameOfRoom = new JTextField(12));
+				String list = user.getRatings();
+				records.setLayout(new BoxLayout(records, BoxLayout.Y_AXIS) );
 				records.setBackground(new Color(211, 211, 211));
+				records.add(new JLabel("RATINGS OF PLAYERS"), "CENTER");
+				if(!list.equals("NULL")) {
+					Scanner scanner = new Scanner(list);
+					int i = 0;
+					//scanner.useDelimiter("#");
+					while(scanner.hasNext()) {
+						
+						records.add( new JLabel((i + 1) + ".name: " + scanner.next() + ", count of battles: " + scanner.next() + ", count of victories: " + scanner.next()));
+						i ++;
+					}
+				}
+				else {
+					records.add(new JLabel("There is no players"));
+				}
+				
+				records.add(buttonBack, "CENTER");
 				Menu.this.add(records);
 				Menu.this.validate();
 				Menu.this.repaint();

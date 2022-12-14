@@ -22,21 +22,86 @@ public class Room {
 	
 	private  int[][] copyCoord = new int[coord.length][coord[0].length];
 	
-	private int stepPlayers = 2;
+	private int levelOfDifficult = 1;
 	
-	private int ballStepX = 2;
+	private int stepPlayers;
 	
-	private int ballStepY = 2;
+	private int ballStepX;
 	
-	private int levelOfDifficult = 0;
+	private int ballStepY;
 	
 	private Timer timer;
+	
+	private int counterHost = 0;
+	
+	private int counterGuest = 0;
 	
 	public Room(HelpServer host, int level, String nameRoom) {
 		this.host = host;
 		this.guest = null;
 		levelOfDifficult = level;
 		this.nameRoom = nameRoom;
+		stepPlayers = 2 * levelOfDifficult;
+		ballStepX = 2 * levelOfDifficult;
+		ballStepY = 2 * levelOfDifficult;
+		for(int i = 0; i < coord.length; i++)
+		{
+		  for(int j = 0; j < coord[0].length; j++) {
+			  copyCoord[i][j] = coord[i][j];
+		  }
+		}
+		timer = new Timer(1000 / 30, new AbstractAction() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+			//	winTheGame();
+				//if(!playerOneWin && !playerTwoWin) {
+				if(hostReady && guestReady) {
+					changes();
+					
+					if(Room.this.host != null)
+						Room.this.host.sendMessage("@coord " + hostY() + " " + guestY() + " " + ballX() + " " + ballY() + " " + counterHost + " " + counterGuest);
+					if(Room.this.guest != null)
+						Room.this.guest.sendMessage("@coord " + hostY() + " " + guestY() + " " + ballX() + " " + ballY() + " " + counterHost + " " + counterGuest );
+					resultOfGame();
+				}
+				
+				
+					
+			}
+			
+		});
+		 
+	}
+	
+	private void resultOfGame() {
+		if((counterHost == 5 || counterGuest == 5)) {
+			if(counterHost > counterGuest) {
+				Server.setResult(host.getID(), true);
+				Server.setResult(guest.getID(), false);
+				host.sendMessage("@result: win");
+				guest.sendMessage("@result: lose");
+				host.setStatusRoom(false);
+				guest.setStatusRoom(false);
+				timer.stop();
+				cancelConnectForHost();
+			
+			}
+			else {
+				Server.setResult(host.getID(), false);
+				Server.setResult(guest.getID(), true);
+				host.sendMessage("@result: lose");
+				guest.sendMessage("@result: win");
+				host.setStatusRoom(false);
+				guest.setStatusRoom(false);
+				timer.stop();
+				cancelConnectForGuest();
+			}
+		}
+	}
+	
+	private void mapUpdate() {
 		for(int i = 0; i < coord.length; i++)
 		{
 		  for(int j = 0; j < coord[0].length; j++) {
@@ -46,8 +111,8 @@ public class Room {
 	}
 	
 	private void changes() {
-		//copyCoord[0][1] += ballStepX;
-		//copyCoord[1][1] += ballStepY;
+		copyCoord[0][1] += ballStepX;
+		copyCoord[1][1] += ballStepY;
 		if(new Rectangle(copyCoord[0][0], copyCoord[1][0], 7, 70).intersects(new Rectangle(copyCoord[0][1], copyCoord[1][1], 30, 30))) {
 			ballStepX = -ballStepX;
 			copyCoord[0][1] += ballStepX;
@@ -61,6 +126,19 @@ public class Room {
 		}
 		if(copyCoord[1][1] < 0) {
 			ballStepY = -ballStepY;
+		}
+		if(copyCoord[0][1] > 900) {
+			hostReady = false;
+			guestReady = false;
+			counterHost++;
+			mapUpdate();
+			
+		}
+		if(copyCoord[0][1] < -15) {
+			hostReady = false;
+			guestReady = false;
+			counterGuest ++;
+			mapUpdate();
 		}
 	
 		
@@ -159,50 +237,24 @@ public class Room {
 			return false;
 		}
 	}
-	private boolean temp = true;
 	
-	public void run() {
-		while(host.getRoomStatus()) {
-			if(guest.getRoomStatus()) {
-				if(hostReady && guestReady) {
-					//try {
-					//	Thread.sleep(1000);
-					//} catch (InterruptedException e1) {
-						// TODO Auto-generated catch block
-					//	e1.printStackTrace();
-				//	}
-					//int i = 0;
-					if(temp) {
-						 timer = new Timer(1000 / 30, new AbstractAction() {
 	
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								// TODO Auto-generated method stub
-							//	winTheGame();
-								//if(!playerOneWin && !playerTwoWin) {
-									changes();
-									host.sendMessage("@coord " + hostY() + " " + guestY() + " " + ballX() + " " + ballY() );
-									guest.sendMessage("@coord " + hostY() + " " + guestY() + " " + ballX() + " " + ballY() );
-									
-								//}
-									if(ballX() > 800 || ballX() <0) {
-										timer.stop();
-									}
-									
-							}
-							
-						});
-						 if(ballX() < 850 || ballX() >0) {
-							 timer.setRepeats(true);
-							 temp = false;
-						 	timer.start();
-						 }
-					}
-				}
-			}
-			else {
-				System.out.println("wait");
-			}
-		}
+	public void stop() {
+		timer.stop();
 	}
+	
+	public void restart() {
+		timer.restart();
+	}
+	
+	public void startFirst() {
+		
+			 
+		timer.setRepeats(true);
+		
+		timer.start();
+		System.out.println("ROOM 251");
+	}
+	
+	
 }

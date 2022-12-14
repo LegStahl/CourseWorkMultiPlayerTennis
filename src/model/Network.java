@@ -23,11 +23,15 @@ public class Network extends Thread  {
 	
 	private boolean STATUSINROOM;
 	
+	private String RESULTGAME = null;
+	
 	private String listOfRooms = null;
 	//[][] coord = {{0, 420, 877 }, {230, 270, 230}};
-	private int[] COORD = {230, 230, 420, 270};
+	private int[] COORD = {230, 230, 420, 270, 0, 0};
 	
-	private int[] copyCoord  = new int[COORD.length];
+	private int[] copyCoord  = new int[COORD.length + 2];
+
+	private String listOfRatings;
 	
 	public Network() {
 		try {
@@ -53,6 +57,10 @@ public class Network extends Thread  {
 		
 	}
 	
+	public String getRatings() {
+		return listOfRatings;
+	}
+	
 	public void close() {
 		try {
 			send("@exit ");
@@ -66,6 +74,12 @@ public class Network extends Thread  {
 		
 	}
 	
+	public String getResult() {
+		return RESULTGAME;
+	}
+	public void setNullToResult() {
+		RESULTGAME = null;
+	}
 	public String getListOfRooms() {
 		return listOfRooms;
 	}
@@ -98,6 +112,13 @@ public class Network extends Thread  {
 		return COORD[3];
 	}
 	
+	public String getHostScore() {
+		return String.valueOf(COORD[4]);
+	}
+	
+	public String getGuestScore() {
+		return String.valueOf(COORD[5]);
+	}
 	public void run() {
 		while(onNet) {
 			try {
@@ -114,6 +135,10 @@ public class Network extends Thread  {
 							ID = false;
 						}
 						
+					}
+					if(message.startsWith("@ratings ")) {
+						message = message.replace("@ratings ", "");
+						listOfRatings = message;
 					}
 					if(message.startsWith("@verify: ")) {
 						if(message.indexOf("ALLRIGHT") >= 0) {
@@ -156,6 +181,16 @@ public class Network extends Thread  {
 							COORD[i] = scanner.nextInt();
 						}
 						scanner.close();
+					}
+					if(message.startsWith("@result: ")) {
+						if(message.indexOf("win") > 0) {
+							RESULTGAME = "WIN!!!";
+							System.out.println("Got Result" + RESULTGAME);
+						}
+						else {
+							RESULTGAME = "LOSE:(((";
+							System.out.println("Got Result" + RESULTGAME);
+						}
 					}
 					if(message.startsWith("@exitFromRoom ")) {
 						STATUSINROOM = false;

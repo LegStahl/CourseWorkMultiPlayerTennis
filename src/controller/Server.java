@@ -17,6 +17,8 @@ public class Server {
 	
 	private static Map<String, Room> rooms;
 	
+	private static String CURRENTID;
+	
 	public static void main(String[] argv) {
 		
 		try {
@@ -28,6 +30,8 @@ public class Server {
 			rooms = new HashMap<String, Room>();
 			
 			database = new DataBase();
+			
+			CURRENTID = new String();
 			
 			ServerSocket serverSocket = new ServerSocket(8888);
 			
@@ -95,9 +99,37 @@ public class Server {
 		return allRooms;
 	}
 	
+	public synchronized static String getRatings() {
+		return database.getRatings();
+	}
+	
+	public synchronized static String setResult(int idUser, boolean result) {
+		if(database.resultFight(idUser, result) == 1) {
+			return "SUCCESS";
+		}
+		else {
+			return "SOMETHINGWRONG";
+		}
+	}
+	
 	public synchronized static boolean deleteRoom(Room room) {
 		rooms.remove(room.getNameRoom());
 		return true;
 	}
 	
+	public synchronized static boolean currentIDUsers(int id) {
+		if(CURRENTID.indexOf(String.valueOf(id)) >= 0) {
+			return true;
+		}
+		return false;
+	}
+	
+	public synchronized static void addIDtoServer(int id) {
+		CURRENTID = CURRENTID + String.valueOf(id) + " ";
+		System.out.println(CURRENTID);
+	}
+	
+	public synchronized static void deleteFromServer(int id) {
+		CURRENTID = CURRENTID.replace(String.valueOf(id), "");
+	}
 }

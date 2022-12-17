@@ -29,7 +29,7 @@ public class Network extends Thread  {
 	//[][] coord = {{0, 420, 877 }, {230, 270, 230}};
 	private int[] COORD = {230, 230, 420, 270, 0, 0};
 	
-	private int[] copyCoord  = new int[COORD.length + 2];
+	
 
 	private String listOfRatings;
 	
